@@ -1,6 +1,6 @@
 (require 'package)
 (add-to-list 'package-archives
-	     '("melpa" . "http://melpa.org/packages/") t)
+             '("melpa" . "http://melpa.org/packages/") t)
 (package-initialize)
 (message "packages")
 
@@ -31,11 +31,13 @@
     powerline
     bison-mode
     spice-mode
+    nhexl-mode
+    yaml-mode
     ))
 
 (mapc #'(lambda (package)
-	  (unless (package-installed-p package)
-	    (package-install package)))
+          (unless (package-installed-p package)
+            (package-install package)))
       my-packages)
 
 (add-to-list 'load-path "~/.emacs.d/packages/")
