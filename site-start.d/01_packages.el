@@ -29,6 +29,8 @@
     centaur-tabs
     kconfig-mode
     powerline
+    bison-mode
+    spice-mode
     ))
 
 (mapc #'(lambda (package)
