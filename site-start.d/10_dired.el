@@ -5,7 +5,7 @@
 (defun xah-dired-mode-setup ()
   "to be run as hook for `dired-mode'."
   (dired-hide-details-mode 1))
-(add-hook 'dired-load-hook '(lambda () (require 'dired-x)))
+(add-hook 'dired-load-hook #'(lambda () (require 'dired-x)))
 (add-hook 'dired-mode-hook 'xah-dired-mode-setup)
 (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
 
@@ -22,7 +22,7 @@
     ))
 
 (add-hook 'dired-load-hook
-          '(lambda ()
+          #'(lambda ()
              (define-key dired-mode-map (kbd "<left>") 'my-dired-find-parent-directory)
              (define-key dired-mode-map (kbd "<right>") 'my-dired-find-file)))
 

@@ -33,6 +33,12 @@
     spice-mode
     nhexl-mode
     yaml-mode
+    vala-mode
+    jinja2-mode
+    rnc-mode
+    scala-mode
+    sbt-mode
+    magit
     ))
 
 (mapc #'(lambda (package)
