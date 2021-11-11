@@ -31,6 +31,12 @@
     powerline
     bison-mode
     spice-mode
+    vala-mode
+    jinja2-mode
+    rnc-mode
+    scala-mode
+    sbt-mode
+    magit
     ))
 
 (mapc #'(lambda (package)
