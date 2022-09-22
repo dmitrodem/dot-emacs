@@ -46,4 +46,4 @@
      "OrgMode")
     (t
      (centaur-tabs-get-group-name (current-buffer))))))
-(centaur-tabs-mode t)
+;;(centaur-tabs-mode t)

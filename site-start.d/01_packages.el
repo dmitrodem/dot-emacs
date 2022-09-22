@@ -39,6 +39,8 @@
     scala-mode
     sbt-mode
     magit
+    telega
+    meson-mode
     ))
 
 (mapc #'(lambda (package)

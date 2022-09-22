@@ -1,19 +1,19 @@
 ;;; vhdl-mode.el --- major mode for editing VHDL code
 
-;; Copyright (C) 1992-2012 Free Software Foundation, Inc.
+;; Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 ;; Authors:     Reto Zimmermann <reto@gnu.org>
 ;;		Rodney J. Whitby <software.vhdl-mode@rwhitby.net>
 ;; Maintainer:	Reto Zimmermann <reto@gnu.org>
-;; Version:     3.38.1
-;; RCS:		$Id: vhdl-mode.el,v 33.102 2015/03/12 12:37:25 reto Exp reto $
+;; Version:     3.38.2
+;; RCS:		$Id: vhdl-mode.el,v 33.107 2020/06/11 13:14:27 reto Exp $
 ;; Keywords:	languages vhdl
 ;; WWW:		http://www.iis.ee.ethz.ch/~zimmi/emacs/vhdl-mode.html
 
-(defconst vhdl-version "3.38.1"
+(defconst vhdl-version "3.38.2"
   "VHDL Mode version number.")
 
-(defconst vhdl-time-stamp "2015-03-12"
+(defconst vhdl-time-stamp "2021-04-26"
   "VHDL Mode time stamp for last update.")
 
 ;; This file is part of GNU Emacs.
@@ -2454,7 +2454,7 @@ Ignore byte-compiler warnings you might see."
   (defalias 'speedbar-line-directory
     'speedbar-line-path))
 
-;; (define-obsolete-variable-alias 'speedbar-key-map 'speedbar-mode-map)
+;;(define-obsolete-variable-alias 'speedbar-key-map 'speedbar-mode-map)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Help functions / inline substitutions / macros
@@ -6141,6 +6141,7 @@ of an identifier that just happens to contain a \"begin\" keyword."
 	 (/= (preceding-char) ?_)
 	 (not (vhdl-in-literal))
 	 (vhdl-begin-p lim)
+	 (not (looking-at "\\<is\\s-+new\\>"))
 	 (cond
 	  ;; "is", "generate", "loop":
 	  ((looking-at "[igl]")
@@ -6162,8 +6163,15 @@ of an identifier that just happens to contain a \"begin\" keyword."
 			      (vhdl-first-word (point)))))))
 	  ;; "component", "units", "record", "protected body":
 	  ((looking-at "component\\|units\\|protected\\(\\s-+body\\)?\\|record")
+	   (vector "end"
+		   (and (vhdl-last-word (point))
+			(or (vhdl-first-word (point))
+			    (save-excursion
+			      (vhdl-beginning-of-statement-1 lim)
+			      (vhdl-backward-skip-label lim)
+			      (vhdl-first-word (point)))))))
 	   ;; The first end found will close the block
-	   (vector "end" nil))
+;	   (vector "end" nil))
 	  ;; "block", "process", "procedural":
 	  ((looking-at "bl\\|p")
 	   (vector "end"
@@ -6661,6 +6669,7 @@ returned point is at the first character of the \"libunit\" keyword."
 	(setq last-forward (point))
 	(while (and (not foundp)
 		    (re-search-forward "\\bis\\b[^_]" last-backward t)
+		    (not (looking-at "\\s-*\\<new\\>"))
 		    (setq placeholder (match-beginning 0)))
 	  (if (or (= (preceding-char) ?_)
 		  (setq literal (vhdl-in-literal)))
@@ -6825,7 +6834,7 @@ statement if already at the beginning of one."
 	    (setq donep t)))
 	 ;; If we are looking at a "begin", then stop
 	 ((and (looking-at vhdl-begin-fwd-re)
-	       (or (not (looking-at "\\<use\\>"))
+	       (or (not (looking-at "\\<use\\|protected\\|is\\s-+new\\>"))
 		   (save-excursion
 		     (back-to-indentation)
 		     (looking-at "\\(\\w+\\s-*:\\s-*\\)?\\<\\(case\\|elsif\\|if\\)\\>")))
@@ -6888,6 +6897,7 @@ keyword at PLACEHOLDER, then return the library unit type."
 	  (<= here (point)))
 	(save-excursion
 	  (goto-char bod)
+;	  (unless (looking-at "\\w+\\s-+\\w+\\s-+is\\s-+new\\>")
 	  (cond
 	   ((looking-at "e") 'entity)
 	   ((looking-at "a") 'architecture)
@@ -7296,7 +7306,8 @@ is not moved."
 	      ;; relpos is the "when" keyword
 	      (vhdl-add-syntax 'statement-case-intro incase-p))
 	     ;; CASE 8B: any old statement
-	     ((< (point) indent-point)
+	     ((and (< (point) indent-point)
+		   (not (looking-at "\\<body\\>")))
 	      ;; relpos is the first statement of the block
 	      (vhdl-add-syntax 'statement placeholder)
 	      (if begin-after-ip
@@ -7530,49 +7541,50 @@ character is a space."
   "Indent the current line as VHDL code.  Returns the amount of
 indentation change."
   (interactive)
-  (let* ((syntax (and vhdl-indent-syntax-based (vhdl-get-syntactic-context)))
-	 (pos (- (point-max) (point)))
-	 (is-comment nil)
-	 (indent
-	  (if syntax
-	      ;; indent syntax-based
-	      (if (and (eq (caar syntax) 'comment)
-		       (>= (vhdl-get-offset (car syntax)) comment-column))
-		  ;; special case: comments at or right of comment-column
-		  (vhdl-get-offset (car syntax))
-		;; align comments like following code line
-		(when vhdl-indent-comment-like-next-code-line
-		  (save-excursion
-		    (while (eq (caar syntax) 'comment)
-		      (setq is-comment t)
-		      (beginning-of-line 2)
-		      (setq syntax (vhdl-get-syntactic-context)))))
-		(when is-comment
-		  (push (cons 'comment nil) syntax))
-		(apply '+ (mapcar 'vhdl-get-offset syntax)))
-	    ;; indent like previous nonblank line
-	    (save-excursion (beginning-of-line)
-			    (re-search-backward "^[^\n]" nil t)
-			    (current-indentation))))
-	 (shift-amt  (- indent (current-indentation))))
-    (and vhdl-echo-syntactic-information-p
-	 (message "syntax: %s, indent= %d" syntax indent))
-    (let ((has-formfeed
-	   (save-excursion (beginning-of-line) (looking-at "\\s-*\f"))))
-      (when (or (not (zerop shift-amt)) has-formfeed)
-	(delete-region (vhdl-point 'bol) (vhdl-point 'boi))
-	(beginning-of-line)
-	(when has-formfeed (insert "\f"))
-	(indent-to indent)))
-    (if (< (point) (vhdl-point 'boi))
-	(back-to-indentation)
-      ;; If initial point was within line's indentation, position after
-      ;; the indentation.  Else stay at same point in text.
-      (when (> (- (point-max) pos) (point))
-	(goto-char (- (point-max) pos))))
-    (run-hooks 'vhdl-special-indent-hook)
-    (vhdl-update-progress-info "Indenting" (vhdl-current-line))
-    shift-amt))
+  (vhdl-prepare-search-2
+   (let* ((syntax (and vhdl-indent-syntax-based (vhdl-get-syntactic-context)))
+	  (pos (- (point-max) (point)))
+	  (is-comment nil)
+	  (indent
+	   (if syntax
+	       ;; indent syntax-based
+	       (if (and (eq (caar syntax) 'comment)
+			(>= (vhdl-get-offset (car syntax)) comment-column))
+		   ;; special case: comments at or right of comment-column
+		   (vhdl-get-offset (car syntax))
+		 ;; align comments like following code line
+		 (when vhdl-indent-comment-like-next-code-line
+		   (save-excursion
+		     (while (eq (caar syntax) 'comment)
+		       (setq is-comment t)
+		       (beginning-of-line 2)
+		       (setq syntax (vhdl-get-syntactic-context)))))
+		 (when is-comment
+		   (push (cons 'comment nil) syntax))
+		 (apply '+ (mapcar 'vhdl-get-offset syntax)))
+	     ;; indent like previous nonblank line
+	     (save-excursion (beginning-of-line)
+			     (re-search-backward "^[^\n]" nil t)
+			     (current-indentation))))
+	  (shift-amt (- indent (current-indentation))))
+     (and vhdl-echo-syntactic-information-p
+	  (message "syntax: %s, indent= %d" syntax indent))
+     (let ((has-formfeed
+	    (save-excursion (beginning-of-line) (looking-at "\\s-*\f"))))
+       (when (or (not (zerop shift-amt)) has-formfeed)
+	 (delete-region (vhdl-point 'bol) (vhdl-point 'boi))
+	 (beginning-of-line)
+	 (when has-formfeed (insert "\f"))
+	 (indent-to indent)))
+     (if (< (point) (vhdl-point 'boi))
+	 (back-to-indentation)
+       ;; If initial point was within line's indentation, position after
+       ;; the indentation.  Else stay at same point in text.
+       (when (> (- (point-max) pos) (point))
+	 (goto-char (- (point-max) pos))))
+     (run-hooks 'vhdl-special-indent-hook)
+     (vhdl-update-progress-info "Indenting" (vhdl-current-line))
+     shift-amt)))
 
 (defun vhdl-indent-region (beg end &optional column)
   "Indent region as VHDL code.
@@ -8342,8 +8354,7 @@ case fixing to a region.  Calls functions `vhdl-indent-buffer',
   (setq end (save-excursion (goto-char end) (point-marker)))
   (save-excursion ; remove DOS EOL characters in UNIX file
     (goto-char beg)
-    (while (search-forward "
-" nil t)
+    (while (search-forward "" nil t)
       (replace-match "" nil t)))
   (when (nth 0 vhdl-beautify-options) (vhdl-fixup-whitespace-region beg end t))
   (when (nth 1 vhdl-beautify-options) (vhdl-fix-statement-region beg end))
@@ -15966,7 +15977,7 @@ is already shown in a buffer."
 	(recenter))
       (vhdl-speedbar-update-current-unit t t)
       (speedbar-set-timer dframe-update-speed)
-      (speedbar-maybee-jump-to-attached-frame))))
+      (dframe-maybee-jump-to-attached-frame))))
 
 (defun vhdl-speedbar-port-copy ()
   "Copy the port of the entity/component or subprogram under the cursor."

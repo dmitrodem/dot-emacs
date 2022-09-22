@@ -7,3 +7,5 @@
 
 (set-frame-font "Fira Code-10")
 (add-to-list 'default-frame-alist '(font . "Fira Code-10"))
+
+(setq native-comp-async-report-warnings-errors 'silent)
