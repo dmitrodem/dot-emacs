@@ -39,7 +39,6 @@
     scala-mode
     sbt-mode
     magit
-    telega
     meson-mode
     ))
 
@@ -49,3 +48,5 @@
       my-packages)
 
 (add-to-list 'load-path "~/.emacs.d/packages/")
+(add-to-list 'load-path "~/.emacs.d/packages/telega.el")
+(require 'telega)
