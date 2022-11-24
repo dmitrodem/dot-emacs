@@ -7,5 +7,7 @@
 
 (set-frame-font "Fira Code-10")
 (add-to-list 'default-frame-alist '(font . "Fira Code-10"))
+;; (set-fontset-font t 'unicode "Symbola" nil 'append)
+(set-fontset-font t 'unicode "Material Icons" nil 'append)
 
 (setq native-comp-async-report-warnings-errors 'silent)
