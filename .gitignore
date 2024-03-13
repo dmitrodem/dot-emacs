@@ -1,0 +1,10 @@
+*~
+.cache
+elpa
+eln-cache
+history
+recentf
+straight
+tramp
+transient
+anaconda-mode
