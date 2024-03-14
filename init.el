@@ -28,6 +28,10 @@
   "Fira Code-10"
   "Default font")
 
+(let* ((font-file (expand-file-name "font.el" user-emacs-directory)))
+  (when (file-exists-p font-file)
+      (load font-file nil 'nomessage)))
+
 (set-frame-font my/mainfont)
 
 (add-to-list 'default-frame-alist `(font . ,my/mainfont))
