@@ -44,8 +44,6 @@
 ;; remote dir-locals.el
 (setq enable-remote-dir-locals t)
 
-;; fucking underscore
-(add-hook 'prog-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
 
 ;; package setup
 (require 'package)
@@ -100,7 +98,7 @@
   (pixel-scroll-precision-interpolate-mice t)
   (pixel-scroll-precision-interpolate-page t)
   (pixel-scroll-precision-large-scroll-height 50.0)
-  :config
+  :init
   (pixel-scroll-precision-mode t))
 
 (use-package all-the-icons-dired
@@ -115,6 +113,7 @@
   :custom
   (dired-listing-switches "-l"))
 
+(use-package all-the-icons)
 (use-package all-the-icons-ibuffer
   :hook (ibuffer-mode . all-the-icons-ibuffer-mode))
 (use-package ibuffer
@@ -154,13 +153,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package magit)
 
+(defun underscore-as-word-symbol ()
+  (modify-syntax-entry ?_ "w"))
+
 (use-package whitespace-cleanup-mode
-  :hook prog-mode)
+  :hook
+  (prog-mode . whitespace-cleanup-mode)
+  (prog-mode . underscore-as-word-symbol))
 
 (use-package projectile)
 
 (use-package company
-  :hook ((python-mode . company-mode)))
+  :hook (python-mode))
 
 (use-package lsp-mode
   :after (company-mode)
@@ -168,7 +172,10 @@
   (setq gc-cons-threshold 100000000
         company-minimum-prefix-length 1
         company-idle-delay 0.0
-        read-process-output-max (* 1024 1024)))
+        read-process-output-max (* 1024 1024))
+  :hook (python-mode verilog-mode))
+
+(use-package lsp-ui)
 
 (use-package flycheck)
 
