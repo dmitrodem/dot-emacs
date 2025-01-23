@@ -36,6 +36,7 @@
 
 (add-to-list 'default-frame-alist `(font . ,my/mainfont))
 (set-fontset-font t 'unicode "Material Icons" nil 'append)
+(set-fontset-font t 'unicode "Symbola" nil 'append)
 
 ;; editing options
 (setq-default indent-tabs-mode nil)
@@ -47,7 +48,6 @@
 
 ;; remote dir-locals.el
 (setq enable-remote-dir-locals t)
-
 
 ;; package setup
 (require 'package)
@@ -72,6 +72,10 @@
  use-package-expand-minimally t)
 
 ;; use-package instances
+(require 'diminish)
+
+(use-package diminish)
+(use-package delight)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; system settings                                                            ;;
@@ -86,10 +90,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; look and feel                                                              ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package dracula-theme
+;; (use-package dracula-theme
+;;   :defer nil
+;;   :config
+;;   (load-theme 'dracula t))
+
+;; (use-package modus-themes
+;;   :defer nil
+;;   :ensure nil
+;;   :init
+;;   (load-theme 'modus-operandi-deuteranopia t))
+
+(use-package spacemacs-theme
   :defer nil
   :config
-  (load-theme 'dracula t))
+  (load-theme 'spacemacs-dark t))
 
 (use-package powerline
   :when (display-graphic-p)
@@ -152,6 +167,7 @@
          :map yas-minor-mode-map
               ("C-c k" . yas-expand)))
 
+(use-package iedit)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; prog-mode settings                                                         ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -161,6 +177,7 @@
   (modify-syntax-entry ?_ "w"))
 
 (use-package whitespace-cleanup-mode
+  :delight
   :hook
   (prog-mode . whitespace-cleanup-mode)
   (prog-mode . underscore-as-word-symbol))
@@ -171,17 +188,63 @@
   :hook (python-mode))
 
 (use-package lsp-mode
-  :after (company-mode)
-  :init
+  :config
   (setq gc-cons-threshold 100000000
         company-minimum-prefix-length 1
         company-idle-delay 0.0
         read-process-output-max (* 1024 1024))
-  :hook (python-mode verilog-mode))
+  :hook (python-mode verilog-ext-mode))
 
 (use-package lsp-ui)
 
-(use-package flycheck)
+(use-package flycheck
+  :init
+  (define-fringe-bitmap 'my-flycheck-fringe-indicator
+    (vector #b00000000
+            #b00000000
+            #b00000000
+            #b00000000
+            #b00000000
+            #b00000000
+            #b00000000
+            #b00011100
+            #b00111110
+            #b00111110
+            #b00111110
+            #b00011100
+            #b00000000
+            #b00000000
+            #b00000000
+            #b00000000
+            #b00000000))
+  (flycheck-define-error-level 'error
+    :severity 2
+    :overlay-category 'flycheck-error-overlay
+    :fringe-bitmap 'my-flycheck-fringe-indicator
+    :fringe-face 'flycheck-fringe-error)
+
+  (flycheck-define-error-level 'warning
+    :severity 1
+    :overlay-category 'flycheck-warning-overlay
+    :fringe-bitmap 'my-flycheck-fringe-indicator
+    :fringe-face 'flycheck-fringe-warning)
+
+  (flycheck-define-error-level 'info
+    :severity 0
+    :overlay-category 'flycheck-info-overlay
+    :fringe-bitmap 'my-flycheck-fringe-indicator
+    :fringe-face 'flycheck-fringe-info))
+(use-package flycheck-languagetool
+  :hook
+  (latex-mode . flycheck-languagetool-setup)
+  :custom
+  (flycheck-languagetool-server-command '("/usr/bin/languagetool-server"))
+  (flycheck-languagetool-language "ru-RU"))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Tree-sitter                                                                ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package tree-sitter)
+(use-package tree-sitter-langs)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; VHDL                                                                       ;;
@@ -253,6 +316,7 @@
 ;; verilog                                                                    ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package verilog-mode
+  :delight Verilog
   :init
   (setq
    verilog-align-ifelse t
@@ -304,6 +368,13 @@
      ports))
   :config (verilog-ext-mode-setup))
 
+(use-package verilog-ts-mode
+  :disabled
+  :when (treesit-language-available-p 'verilog)
+  :init
+  (add-to-list 'auto-mode-alist '("\\.s?vh?\\'" . verilog-ts-mode))
+  :custom
+  (verilog-ts-indent-level 2))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; other EDA settings                                                         ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -321,16 +392,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; python                                                                     ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package anaconda-mode
-  :init
-  (add-hook 'python-mode-hook 'anaconda-mode)
-  (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
-
-(use-package company-anaconda
-  :after company
-  :init
-  (add-to-list 'company-backends 'company-anaconda))
-
 (use-package pyvenv
   :hook ((python-mode . pyvenv-mode)))
 
@@ -350,10 +411,35 @@
 (use-package meson-mode)
 (use-package dts-mode)
 (use-package arduino-mode)
-
+(use-package rust-mode)
+(use-package cmake-mode)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CAD                                                                        ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package scad-mode)
+
+(use-package mu4e
+  :straight (mu4e
+             :type git
+             :host github
+             :repo "emacsmirror/mu4e"
+             :files ("build/mu4e/*.el"))
+  :custom
+  (mu4e-mu-binary (expand-file-name "build/mu/mu" (straight--repos-dir "mu4e")))
+  (mu4e-drafts-folder "/demin.da@mipt.ru/Drafts")
+  (mu4e-sent-folder "/demin.da@mipt.ru/Sent")
+  (mu4e-trash-folder "/demin.da@mipt.ru/Trash")
+  (mu4e-get-mail-command "mbsync -a")
+  (mu4e-use-fancy-chars t))
+
+(use-package saveplace
+  :config
+  (save-place-mode t))
+
+(use-package org
+  :custom
+  (org-babel-load-languages '((emacs-lisp . t)
+                              (python . t))))
+
 (provide '.emacs)
 ;;; .emacs ends here
