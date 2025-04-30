@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (setq custom-file "~/.config/emacs/customize.el")
 (when (file-exists-p custom-file)
  (load-file custom-file))
@@ -413,24 +414,12 @@
 (use-package arduino-mode)
 (use-package rust-mode)
 (use-package cmake-mode)
+(use-package platformio-mode)
+(use-package ccls)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CAD                                                                        ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package scad-mode)
-
-(use-package mu4e
-  :straight (mu4e
-             :type git
-             :host github
-             :repo "emacsmirror/mu4e"
-             :files ("build/mu4e/*.el"))
-  :custom
-  (mu4e-mu-binary (expand-file-name "build/mu/mu" (straight--repos-dir "mu4e")))
-  (mu4e-drafts-folder "/demin.da@mipt.ru/Drafts")
-  (mu4e-sent-folder "/demin.da@mipt.ru/Sent")
-  (mu4e-trash-folder "/demin.da@mipt.ru/Trash")
-  (mu4e-get-mail-command "mbsync -a")
-  (mu4e-use-fancy-chars t))
 
 (use-package saveplace
   :config
@@ -439,7 +428,9 @@
 (use-package org
   :custom
   (org-babel-load-languages '((emacs-lisp . t)
-                              (python . t))))
+                              (python . t)))
+  (org-latex-to-mathml-convert-command "java -jar %j -unicode -force -df %o %I")
+  (org-latex-to-mathml-jar-file "/home/dmitrodem/.local/bin/mathtoweb.jar"))
 
 (provide '.emacs)
 ;;; .emacs ends here
