@@ -73,8 +73,6 @@
  use-package-expand-minimally t)
 
 ;; use-package instances
-(require 'diminish)
-
 (use-package diminish)
 (use-package delight)
 
@@ -91,21 +89,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; look and feel                                                              ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (use-package dracula-theme
-;;   :defer nil
-;;   :config
-;;   (load-theme 'dracula t))
-
-;; (use-package modus-themes
-;;   :defer nil
-;;   :ensure nil
-;;   :init
-;;   (load-theme 'modus-operandi-deuteranopia t))
-
-(use-package spacemacs-theme
-  :defer nil
-  :config
-  (load-theme 'spacemacs-dark t))
+(use-package dracula-theme
+  :defer t
+  :custom
+  (custom-enabled-themes (quote (dracula))))
 
 (use-package powerline
   :when (display-graphic-p)
@@ -178,7 +165,6 @@
   (modify-syntax-entry ?_ "w"))
 
 (use-package whitespace-cleanup-mode
-  :delight
   :hook
   (prog-mode . whitespace-cleanup-mode)
   (prog-mode . underscore-as-word-symbol))
@@ -196,57 +182,17 @@
         read-process-output-max (* 1024 1024))
   :hook (python-mode verilog-ext-mode))
 
+(use-package lsp-pylsp
+  :ensure nil
+  :custom
+  (lsp-pylsp-plugins-flake8-enabled nil)
+  (lsp-pylsp-plugins-pycodestyle-enabled t)
+  (lsp-pylsp-plugins-pycodestyle-max-line-length 120))
+
 (use-package lsp-ui)
 
-(use-package flycheck
-  :init
-  (define-fringe-bitmap 'my-flycheck-fringe-indicator
-    (vector #b00000000
-            #b00000000
-            #b00000000
-            #b00000000
-            #b00000000
-            #b00000000
-            #b00000000
-            #b00011100
-            #b00111110
-            #b00111110
-            #b00111110
-            #b00011100
-            #b00000000
-            #b00000000
-            #b00000000
-            #b00000000
-            #b00000000))
-  (flycheck-define-error-level 'error
-    :severity 2
-    :overlay-category 'flycheck-error-overlay
-    :fringe-bitmap 'my-flycheck-fringe-indicator
-    :fringe-face 'flycheck-fringe-error)
-
-  (flycheck-define-error-level 'warning
-    :severity 1
-    :overlay-category 'flycheck-warning-overlay
-    :fringe-bitmap 'my-flycheck-fringe-indicator
-    :fringe-face 'flycheck-fringe-warning)
-
-  (flycheck-define-error-level 'info
-    :severity 0
-    :overlay-category 'flycheck-info-overlay
-    :fringe-bitmap 'my-flycheck-fringe-indicator
-    :fringe-face 'flycheck-fringe-info))
-(use-package flycheck-languagetool
-  :hook
-  (latex-mode . flycheck-languagetool-setup)
-  :custom
-  (flycheck-languagetool-server-command '("/usr/bin/languagetool-server"))
-  (flycheck-languagetool-language "ru-RU"))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Tree-sitter                                                                ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package tree-sitter)
-(use-package tree-sitter-langs)
-
+(use-package flycheck)
+(use-package ccls)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; VHDL                                                                       ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -317,7 +263,6 @@
 ;; verilog                                                                    ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package verilog-mode
-  :delight Verilog
   :init
   (setq
    verilog-align-ifelse t
@@ -369,13 +314,6 @@
      ports))
   :config (verilog-ext-mode-setup))
 
-(use-package verilog-ts-mode
-  :disabled
-  :when (treesit-language-available-p 'verilog)
-  :init
-  (add-to-list 'auto-mode-alist '("\\.s?vh?\\'" . verilog-ts-mode))
-  :custom
-  (verilog-ts-indent-level 2))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; other EDA settings                                                         ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -397,6 +335,29 @@
   :hook ((python-mode . pyvenv-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; org-mode                                                                   ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package ox-latex
+  :ensure nil
+  :custom
+  (org-latex-inputenc-alist '("utf8")))
+;; (add-to-list 'org-latex-packages-alist '("english,russian" "babel" t)))
+
+(use-package ox
+  :ensure nil
+  :custom
+  (org-export-default-language "ru"))
+
+(use-package org
+  :straight t
+  :custom
+  (org-babel-load-languages '((emacs-lisp . t) (python . t)))
+  (org-latex-packages-alist '(
+                              ("T2A" "fontenc" t)
+                              (""    "cmap"    t))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; other prog-modes                                                           ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package vala-mode
@@ -416,10 +377,21 @@
 (use-package cmake-mode)
 (use-package platformio-mode)
 (use-package ccls)
+
+(use-package smali-mode
+  :straight (smali-mode
+             :type git
+             :host github
+             :repo "strazzere/Emacs-Smali")
+  :mode (("\\.smali$" . smali-mode)))
+
+(use-package typescript-mode)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CAD                                                                        ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package scad-mode)
+(use-package gcode-mode)
 
 (use-package saveplace
   :config
