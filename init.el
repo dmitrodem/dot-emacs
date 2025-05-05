@@ -156,6 +156,11 @@
               ("C-c k" . yas-expand)))
 
 (use-package iedit)
+
+(use-package saveplace
+  :config
+  (save-place-mode t))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; prog-mode settings                                                         ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -188,6 +193,11 @@
   (lsp-pylsp-plugins-flake8-enabled nil)
   (lsp-pylsp-plugins-pycodestyle-enabled t)
   (lsp-pylsp-plugins-pycodestyle-max-line-length 120))
+
+(use-package lsp-verilog
+  :ensure nil
+  :custom
+  (lsp-clients-svlangserver-includeIndexing ["**/*.{v,vh,sv,svh}"]))
 
 (use-package lsp-ui)
 
@@ -354,7 +364,10 @@
   (org-babel-load-languages '((emacs-lisp . t) (python . t)))
   (org-latex-packages-alist '(
                               ("T2A" "fontenc" t)
-                              (""    "cmap"    t))))
+                              (""    "cmap"    t)))
+  (org-latex-to-mathml-convert-command "java -jar %j -unicode -force -df %o %I")
+  (org-latex-to-mathml-jar-file "/home/dmitrodem/.local/bin/mathtoweb.jar"))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -392,17 +405,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package scad-mode)
 (use-package gcode-mode)
-
-(use-package saveplace
-  :config
-  (save-place-mode t))
-
-(use-package org
-  :custom
-  (org-babel-load-languages '((emacs-lisp . t)
-                              (python . t)))
-  (org-latex-to-mathml-convert-command "java -jar %j -unicode -force -df %o %I")
-  (org-latex-to-mathml-jar-file "/home/dmitrodem/.local/bin/mathtoweb.jar"))
 
 (provide '.emacs)
 ;;; .emacs ends here
