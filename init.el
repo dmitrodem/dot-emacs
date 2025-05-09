@@ -89,10 +89,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; look and feel                                                              ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package dracula-theme
-  :defer t
+(use-package doom-themes
   :custom
-  (custom-enabled-themes (quote (dracula))))
+  (doom-themes-enable-bold t)    ; if nil, bold is universally disabled
+  (doom-themes-enable-italic t)  ; if nil, italics is universally disabled
+  (custom-enabled-themes (quote (doom-one)))
+  :config
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (nerd-icons must be installed!)
+  (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 
 (use-package powerline
   :when (display-graphic-p)
@@ -161,6 +172,9 @@
   :config
   (save-place-mode t))
 
+(use-package neotree)
+(use-package nerd-icons)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; prog-mode settings                                                         ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -179,12 +193,19 @@
 (use-package company
   :hook (python-mode))
 
+;; can add extra paths for jedi via local var:
+;; e.g.
+;; lsp-pylsp-plugins-jedi-extra_paths: ["python-ant/src"]
+(defvar-local lsp-pylsp-plugins-jedi-extra_paths [])
+(put 'lsp-pylsp-plugins-jedi-extra_paths 'safe-local-variable 'lsp--string-vector-p)
+
 (use-package lsp-mode
   :config
   (setq gc-cons-threshold 100000000
         company-minimum-prefix-length 1
         company-idle-delay 0.0
         read-process-output-max (* 1024 1024))
+    (lsp-register-custom-settings '(("pylsp.plugins.jedi.extra_paths" lsp-pylsp-plugins-jedi-extra_paths)))
   :hook (python-mode verilog-ext-mode))
 
 (use-package lsp-pylsp
@@ -198,6 +219,11 @@
   :ensure nil
   :custom
   (lsp-clients-svlangserver-includeIndexing ["**/*.{v,vh,sv,svh}"]))
+
+(use-package lsp-csharp
+  :ensure nil
+  :custom
+  (lsp-csharp-server-path "/home/dmitriy/.local/bin/OmniSharp"))
 
 (use-package lsp-ui)
 
@@ -406,5 +432,6 @@
 (use-package scad-mode)
 (use-package gcode-mode)
 
+(use-package vterm)
 (provide '.emacs)
 ;;; .emacs ends here
