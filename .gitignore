@@ -11,3 +11,6 @@ transient
 anaconda-mode
 font.el
 customize.el
+places
+projects
+projectile-bookmarks.eld
