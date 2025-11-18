@@ -174,6 +174,9 @@
 
 (use-package neotree)
 (use-package nerd-icons)
+(use-package openwith
+  :config
+  (openwith-mode t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; prog-mode settings                                                         ;;
@@ -387,10 +390,16 @@
 (use-package org
   :straight t
   :custom
-  (org-babel-load-languages '((emacs-lisp . t) (python . t)))
+  (org-babel-load-languages '(
+                              (emacs-lisp . t)
+                              (python . t)
+                              (latex . t)))
   (org-latex-packages-alist '(
                               ("T2A" "fontenc" t)
-                              (""    "cmap"    t)))
+                              (""    "cmap"    t)
+                              ("russian,english" "babel" t)
+                              ("left=1cm,right=1cm,top=1cm,bottom=2cm" "geometry" t)
+                              ))
   (org-latex-to-mathml-convert-command "java -jar %j -unicode -force -df %o %I")
   (org-latex-to-mathml-jar-file "/home/dmitrodem/.local/bin/mathtoweb.jar"))
 
@@ -425,6 +434,9 @@
   :mode (("\\.smali$" . smali-mode)))
 
 (use-package typescript-mode)
+(use-package spice-mode
+  :hook
+  ((spice-mode) . font-lock-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CAD                                                                        ;;
@@ -433,5 +445,6 @@
 (use-package gcode-mode)
 
 (use-package vterm)
+
 (provide '.emacs)
 ;;; .emacs ends here
