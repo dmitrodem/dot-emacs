@@ -438,6 +438,13 @@
   :hook
   ((spice-mode) . font-lock-mode))
 
+(use-package maxima
+  :custom
+  (maxima-display-maxima-buffer nil)
+  (maxima-use-full-color-in-process-buffer t)
+  (maxima-save-input-history t)
+  (maxima-input-history-length 1000))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CAD                                                                        ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -445,6 +452,26 @@
 (use-package gcode-mode)
 
 (use-package vterm)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; GPT                                                                        ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package gptel
+  :custom
+  ;; Set DeepSeek as the default backend
+  (gptel-backend (gptel-make-openai "DeepSeek"
+                     :host "api.deepseek.com"
+                     :endpoint "/chat/completions"
+                     :stream t
+                     :key (getenv "DEEPSEEK_API_KEY")
+                     :models '(deepseek-chat deepseek-coder)))
+  ;; API Key configuration
+  (gptel-model 'deepseek-coder)
+  :init
+  (add-hook 'gptel-post-response-functions 'gptel-end-of-response)
+  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll))
+
+(use-package gptel-agent)
 
 (provide '.emacs)
 ;;; .emacs ends here
