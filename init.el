@@ -174,9 +174,6 @@
 
 (use-package neotree)
 (use-package nerd-icons)
-(use-package openwith
-  :config
-  (openwith-mode t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; prog-mode settings                                                         ;;
@@ -214,9 +211,11 @@
 (use-package lsp-pylsp
   :ensure nil
   :custom
-  (lsp-pylsp-plugins-flake8-enabled nil)
-  (lsp-pylsp-plugins-pycodestyle-enabled t)
-  (lsp-pylsp-plugins-pycodestyle-max-line-length 120))
+  (lsp-pylsp-plugins-flake8-enabled t)
+  (lsp-pylsp-plugins-pycodestyle-enabled nil)
+  (lsp-pylsp-plugins-mccabe-enabled nil)
+  (lsp-pylsp-plugins-pyflakes-enabled nil)
+  (lsp-pylsp-plugins-pydocstyle-enabled nil))
 
 (use-package lsp-verilog
   :ensure nil
@@ -228,6 +227,9 @@
   :custom
   (lsp-csharp-server-path "/home/dmitriy/.local/bin/OmniSharp"))
 
+(use-package lsp-java
+  :custom
+  (lsp-java-java-path "/usr/lib/jvm/java-21-openjdk/bin/java"))
 (use-package lsp-ui)
 
 (use-package flycheck)
@@ -452,7 +454,6 @@
 (use-package gcode-mode)
 
 (use-package vterm)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; GPT                                                                        ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -472,6 +473,5 @@
   (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll))
 
 (use-package gptel-agent)
-
 (provide '.emacs)
 ;;; .emacs ends here
